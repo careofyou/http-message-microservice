@@ -29,7 +29,7 @@ var (
 )
 func initDB() {
   var err error
-  connStr := "user=username dbname=message password=password sslmode=disable"
+  connStr := "postgresql://postgres:OdwfDjrpjxZlYxpGlVvxMjAvXyibOZHe@postgres.railway.internal:5432/railway"
   db, err = sql.Open("postgres", connStr)
   if err != nil {
     log.Fatal(err)
@@ -139,6 +139,18 @@ func deleteMessage(w http.ResponseWriter, r *http.Request) {
   params := mux.Vars(r)
 
   _, err := db.Exec("DELETE FROM messages WHERE id = $1", params["id"])
+  if err != nil {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
+  }
+
+  w.Header().Set("Content-Type", "application/json")
+  json.NewEncoder(w).Encode(messages)
+}
+
+func getStatistcs(w http.ResponseWriter, r *http.Request) {
+  var stats Statistics
+  err := db.QueryRow("SELECT COUNT(*) FROM messages").Scan(&stats.TotalMessages)
   if err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
     return
