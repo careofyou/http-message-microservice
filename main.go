@@ -78,7 +78,7 @@ func getMessages(w http.ResponseWriter, r *http.Request) {
 func getMessage(w http.ResponseWriter, r *http.Request) {
   params := mux.Vars(r)
   var message Message
-  err := db.QueryRow("SELECT id, msgm author FROM message WHERE id = $1", params["id"]).Scan(&message.ID, &message.Msg, &message.Author)
+  err := db.QueryRow("SELECT id, msg, author FROM message WHERE id = $1", params["id"]).Scan(&message.ID, &message.Msg, &message.Author)
   if err != nil {
     if err == sql.ErrNoRows {
       w.WriteHeader(http.StatusNotFound)
@@ -164,8 +164,6 @@ func main() {
   defer kafkaWriter.Close()
 
   r := mux.NewRouter()
-  messages = append(messages, Message{ID: "1", Msg: "Hello world!", Author: "Petya"})
-  messages = append(messages, Message{ID: "2", Msg: "Hello hru?", Author: "Grisha"})
   r.HandleFunc("/messages", getMessages).Methods("GET")
   r.HandleFunc("/messages/{id}", getMessage).Methods("GET")
   r.HandleFunc("/messages", sendMessage).Methods("POST")
