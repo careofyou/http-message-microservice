@@ -47,7 +47,7 @@ func initDB() {
 func initKafka() {
   kafkaWriter = &kafka.Writer {
     Addr:   kafka.TCP("localhost:9092"),
-    Topics: "message_topic",
+    Topics: []string{"message_topic"},
     Balancer: &kafka.LeastBytes{},
   }
 }
@@ -129,9 +129,7 @@ func updateMessage(w http.ResponseWriter, r *http.Request) {
     http.Error(w, err.Error(), http.StatusInternalServerError)
     return
   }
-
-  w.Header().Set("Content-Type", "application/json")
-  json.NewEncoder(w).Encode(messages)
+  w.WriteHeader(http.StatusNoContent)
 }
 
 func deleteMessage(w http.ResponseWriter, r *http.Request) {
@@ -143,8 +141,7 @@ func deleteMessage(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  w.Header().Set("Content-Type", "application/json")
-  json.NewEncoder(w).Encode(messages)
+  w.WriteHeader(http.StatusNoContent)
 }
 
 func getStatistcs(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +153,7 @@ func getStatistcs(w http.ResponseWriter, r *http.Request) {
   }
 
   w.Header().Set("Content-Type", "application/json")
-  json.NewEncoder(w).Encode(messages)
+  json.NewEncoder(w).Encode(stats)
 }
 
 func main() {
