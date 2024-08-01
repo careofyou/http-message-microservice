@@ -82,19 +82,19 @@ func getMessage(w http.ResponseWriter, r *http.Request) {
   if err != nil {
     if err == sql.ErrNoRows {
       w.WriteHeader(http.StatusNotFound)
-    } else {
-      http.Error(w, err.Error(), http.StatusInternalServerError)
+      return
     }
+    http.Error(w, err.Error(), http.StatusInternalServerError)
     return
   }
 
-  w.Header().Set("Content-Type", "application/json")
-  json.NewEncoder(w).Encode(&Message{})
-}
+  w.Header().Set("Content-Type", "application/json")  
+
+  json.NewEncoder(w).Encode(message)   
 
 func sendMessage(w http.ResponseWriter, r *http.Request) {
   var message Message
-  _ = json.NewDecoder(r.Body).Decode(&message)
+  _ = json.NewDecoder(r.Body).Decode(&message) 
   message.ID = strconv.Itoa(rand.Intn(1000000))
 
   _, err := db.Exec("INSERT INTO messages (id, msg, author) VALUES ($1, $2, $3)", message.ID, message.Msg, message.Author)
@@ -107,15 +107,16 @@ func sendMessage(w http.ResponseWriter, r *http.Request) {
     kafka.Message{
       Key: []byte(message.ID),
       Value: []byte(message.Msg),
-      },
-    )
+    },
+  )
   if err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
     return
   }
 
   w.Header().Set("Content-Type", "application/json")
-  json.NewEncoder(w).Encode(message)
+  json.NewEncoder(w).Encode(message)  
+
 }
 
 func updateMessage(w http.ResponseWriter, r *http.Request) {
